@@ -1,6 +1,7 @@
 use std::io::{BufReader, stdin, stdout};
 use std::io::prelude::*;
 use std::fs::File;
+use std::fs;
 use std::rc::Rc;
 use std::io::{Error, ErrorKind};
 
@@ -17,7 +18,7 @@ pub struct Action {
 pub fn read_file(action: &Action) -> Result<usize, Error> {
     
     if action.action_len == 0 {
-        return Err(std::io::Error::new(ErrorKind::Other, "No file path specified"))
+        return Err(std::io::Error::new(ErrorKind::Other, "IO/ERROR: No file path specified"))
     }
 
     let file = File::open(action.action_args.first().unwrap())?;
@@ -32,7 +33,26 @@ pub fn read_file(action: &Action) -> Result<usize, Error> {
     }
     Ok(bytes_number)
 }
+/*
+   dir_list - list directories of the system
+*/
+pub fn dir_list(action: &Action) -> Result<usize, Error> {
+    if action.action_len == 0 {
+        return Err(std::io::Error::new(ErrorKind::Other, "IO/ERROR: No directories given"))
+    }
 
+    let mut n_directories: usize = 0;
+
+    for arg in action.action_args.iter() {
+        let dirs = fs::read_dir(arg.as_str()).unwrap();
+        for dir in dirs {
+            println!("{}==> {}", n_directories, dir.unwrap().path().display());
+            n_directories += 1;
+        }
+        println!("---");
+    }
+    Ok(n_directories)
+}
 
 
 pub fn read_stdin() -> Result<u64, std::io::Error> {
@@ -81,9 +101,15 @@ pub fn read_stdin() -> Result<u64, std::io::Error> {
                         Err(e) => println!("{}", e)
                     }
                 },
+                "Dir" => {
+                    match dir_list(&action) {
+                        Ok(n) => println!("Dirs: {}", n),
+                        Err(e) => println!("{}", e)
+                    }
+                },
                 "Exit" => break 'EventLoop,
                 _ => println!("Command or binary not found"),
-            }
+        }
 
     };
 
