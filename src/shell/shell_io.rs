@@ -62,7 +62,7 @@ pub fn dir_list(action: &Action) -> Result<usize, Error> {
 pub fn resolve_dns(action: &Action) -> Result<(), std::io::Error> {
 
     if action.action_len == 0 {
-        return Err(std::io::Error::new(ErrorKind::Other, "I/0 No DNS given as argument"));
+        return Err(std::io::Error::new(ErrorKind::Other, "  I/0 No DNS given as argument"));
     }
 
     for dns in action.action_args.iter() {
@@ -70,7 +70,9 @@ pub fn resolve_dns(action: &Action) -> Result<(), std::io::Error> {
         let resolver: Vec<std::net::IpAddr> = lookup_host(hostname).unwrap();
         let ip = &resolver[0];
         let mask = &resolver[1];
-        println!("DOMAIN => {hostname}\nIP => {ip}\nMASK => {mask}")
+        println!("\t-------------------------------------------------");
+        println!("\tDOMAIN => {hostname}\n\tIP => {ip}\n\tMASK => {mask}");
+        println!("\t-------------------------------------------------")
     }
     Ok(())
 }
@@ -85,7 +87,7 @@ pub fn read_stdin() -> Result<u64, std::io::Error> {
         let mut buffer = String::new();
 
 
-        print!("Lexer> ");
+        print!("<Lexer>> ");
         stdout().flush().unwrap();
 
         stdin()
@@ -121,13 +123,13 @@ pub fn read_stdin() -> Result<u64, std::io::Error> {
                 },
                 "Solve" => {
                     match resolve_dns(&action) {
-                        Ok(_) => println!("Domain solving finished"),
+                        Ok(_) => println!("\t[!] Domain solving finished"),
                         Err(e) => println!("{}", e)
                     }
                 },
                 "Dir" => {
                     match dir_list(&action) {
-                        Ok(n) => println!("Dirs: {}", n),
+                        Ok(n) => println!("--- Dirs: {}", n),
                         Err(e) => println!("{}", e)
                     }
                 },
