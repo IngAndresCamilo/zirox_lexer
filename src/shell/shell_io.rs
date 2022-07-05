@@ -1,3 +1,6 @@
+use dns_lookup::lookup_host;
+use std::thread;
+use std::net::TcpStream;
 use std::io::{BufReader, stdin, stdout};
 use std::io::prelude::*;
 use std::fs::File;
@@ -55,6 +58,24 @@ pub fn dir_list(action: &Action) -> Result<usize, Error> {
 }
 
 
+
+pub fn resolve_dns(action: &Action) -> Result<(), std::io::Error> {
+
+    if action.action_len == 0 {
+        return Err(std::io::Error::new(ErrorKind::Other, "I/0 No DNS given as argument"));
+    }
+
+    for dns in action.action_args.iter() {
+        let hostname = dns.as_str();
+        let resolver: Vec<std::net::IpAddr> = lookup_host(hostname).unwrap();
+        let ip = &resolver[0];
+        let mask = &resolver[1];
+        println!("DOMAIN => {hostname}\nIP => {ip}\nMASK => {mask}")
+    }
+    Ok(())
+}
+
+
 pub fn read_stdin() -> Result<u64, std::io::Error> {
     
     println!("Zirox Lexer 0.0.1");
@@ -91,13 +112,16 @@ pub fn read_stdin() -> Result<u64, std::io::Error> {
                 action_len: cmd_parsed.len() - 1
         };
 
-
-
         match action.action_name.as_str() {
-
                 "Read" => {
                     match read_file(&action) {
                         Ok(bytes) => println!("{}", bytes),
+                        Err(e) => println!("{}", e)
+                    }
+                },
+                "Solve" => {
+                    match resolve_dns(&action) {
+                        Ok(_) => println!("Domain solving finished"),
                         Err(e) => println!("{}", e)
                     }
                 },
@@ -110,8 +134,6 @@ pub fn read_stdin() -> Result<u64, std::io::Error> {
                 "Exit" => break 'EventLoop,
                 _ => println!("Command or binary not found"),
         }
-
     };
-
     Ok(1)
 }
