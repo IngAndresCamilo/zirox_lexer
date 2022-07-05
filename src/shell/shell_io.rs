@@ -67,11 +67,15 @@ pub fn resolve_dns(action: &Action) -> Result<(), std::io::Error> {
 
     for dns in action.action_args.iter() {
         let hostname = dns.as_str();
-        let resolver: Vec<std::net::IpAddr> = lookup_host(hostname).unwrap();
+        let resolver = lookup_host(hostname);
+        if resolver.is_err() {
+            return Err(std::io::Error::new(ErrorKind::Other, format!("I/O Error solving dns: {hostname}")))
+        }
+        let resolver = resolver.unwrap();
         let ip = &resolver[0];
         let mask = &resolver[1];
         println!("\t-------------------------------------------------");
-        println!("\tDOMAIN => {hostname}\n\tIP => {ip}\n\tMASK => {mask}");
+        println!("\t{hostname}\n\t{ip}\n\t{mask}");
         println!("\t-------------------------------------------------")
     }
     Ok(())
