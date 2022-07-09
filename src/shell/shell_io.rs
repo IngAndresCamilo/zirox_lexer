@@ -82,6 +82,34 @@ pub fn resolve_dns(action: &Action) -> Result<(), std::io::Error> {
 }
 
 
+pub fn handle_action(action: &Action) -> bool {
+    let mut exit_handler = false;
+    match action.action_name.as_str() {
+        "Read" => {
+            match read_file(&action) {
+                Ok(bytes) => println!("{}", bytes),
+                Err(e) => println!("{}", e)
+            }
+        },
+        "Solve" => {
+            match resolve_dns(&action) {
+                Ok(_) => println!("\t[!] Domain solving finished"),
+                Err(e) => println!("{}", e)
+            }
+        },
+        "Dir" => {
+            match dir_list(&action) {
+                Ok(n) => println!("{} found", n),
+                Err(e) => println!("{}", e)
+            }
+        },
+        "Exit" => exit_handler = true,
+        _ => println!("Command or binary not found"),
+    }
+    exit_handler
+}
+
+
 pub fn read_stdin() -> Result<u64, std::io::Error> {
     
     println!("Zirox Lexer 0.0.1");
@@ -118,27 +146,8 @@ pub fn read_stdin() -> Result<u64, std::io::Error> {
                 action_len: cmd_parsed.len() - 1
         };
 
-        match action.action_name.as_str() {
-                "Read" => {
-                    match read_file(&action) {
-                        Ok(bytes) => println!("{}", bytes),
-                        Err(e) => println!("{}", e)
-                    }
-                },
-                "Solve" => {
-                    match resolve_dns(&action) {
-                        Ok(_) => println!("\t[!] Domain solving finished"),
-                        Err(e) => println!("{}", e)
-                    }
-                },
-                "Dir" => {
-                    match dir_list(&action) {
-                        Ok(n) => println!("--- Dirs: {}", n),
-                        Err(e) => println!("{}", e)
-                    }
-                },
-                "Exit" => break 'EventLoop,
-                _ => println!("Command or binary not found"),
+        if handle_action(&action) {
+            break 'EventLoop;
         }
     };
     Ok(1)
