@@ -81,7 +81,7 @@ pub fn resolve_dns(action: &Action) -> Result<(), std::io::Error> {
     Ok(())
 }
 
-
+//Receive an action structure
 pub fn handle_action(action: &Action) -> bool {
     let mut exit_handler = false;
     match action.action_name.as_str() {
